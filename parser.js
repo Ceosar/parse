@@ -1,18 +1,16 @@
 console.log("start");
-// // GIEYS3IP-C
-// var tableRowElement = document.querySelector(".tableRow");
-// var resizeCol = tableRowElement.querySelector('.resize-column-90');
-// var tegA = resizeCol.querySelector('.cellInsider');
-// var divElement = tegA.querySelector('div');
-// var text = divElement.textContent;
-// console.log(text);
-
-
-console.log("start");
 
 var tableRowElements = document.querySelectorAll(".tableRow");
 
 var existingData = JSON.parse(localStorage.getItem("state")) || [];
+
+var link;
+
+// async function parseWindow(linker){
+//     return new Promise((resolve, reject) => {
+//         var newTab = window.open
+//     })
+// }
 
 tableRowElements.forEach(async function(tableRowElement) {
     var dateStart = "";
@@ -52,9 +50,9 @@ tableRowElements.forEach(async function(tableRowElement) {
 
     if (resizeCol3) {
         var tegA = resizeCol3.querySelector('.cellInsider');
-        
+
         if (tegA) {
-        
+
             var divElement = tegA.querySelector('div');
             if (divElement) {
                 id = divElement.textContent;
@@ -102,34 +100,49 @@ tableRowElements.forEach(async function(tableRowElement) {
         }
     }
 
+    var iframe = tableRowElement.querySelector("iframe");
+    // console.log(iframe)
+
+    if (iframe) {
+        var iframeDocument = iframe.contentWindow.document;
+        if (iframeDocument) {
+            var divInsideIframe = iframeDocument.querySelector("div");
+
+            if (divInsideIframe) {
+                var content = divInsideIframe.textContent.trim();
+                console.log("Содержимое <div> внутри iframe:", content);
+            } else {
+                console.log("Элемент <div> внутри iframe не найден");
+            }
+        }
+    }
+
     var resizeCol7 = tableRowElement.querySelector('.resize-column-90');
 
     if (resizeCol7) {
         var tegA = resizeCol7.querySelector('.cellInsider');
-        var link = tegA.getAttribute('href');
+        link = tegA.getAttribute('href');
         console.log(link)
-        if (link) {
-            try{
-                var response = await fetch('https://10.77.71.130/sd/operator/'+link);
-                var htmlText = await response.text();
-                var parser = new DOMParser();
-                var doc = parser.parseFromString(htmlText, 'text/html');
-                var someElement = doc.querySelector('iframe');
-                var documentIframe = someElement.querySelector("html");
-                console.log(documentIframe)
-                // if(someElement){
-                //     var someText = someElement.querySelector('div');
-                //     console.log(someText.textContent);
-                // }
-            }
-            catch(error){
-                console.log(error)
-            }
-            // var divElement = tegA.querySelector('div');
-            // if (divElement) {
-            //     id = divElement.textContent;
-            //     console.log(id);
-            // }
+        console.log(tegA)
+        try {
+            var linker = 'https://10.77.71.130/sd/operator/' + link;
+            // var linker = 'https://10.77.71.130/sd/operator/#uuid:serviceCall$1832624890';
+            console.log(linker);
+            var newTab = window.open(linker, '_blank');
+            newTab.onload = async function() {
+                try {
+                    var body = document.querySelector('body');
+                    console.log(body);
+                } catch (error) {
+                    console.log("Ошибка при обращении к содержимому iframe:", error);
+                } finally {
+                    console.log('closed');
+                    newTab.close();
+                }
+            };
+        }
+        catch(error){
+            console.log(error)
         }
     }
 
@@ -145,4 +158,13 @@ tableRowElements.forEach(async function(tableRowElement) {
     existingData.push(obj)
 });
 
-localStorage.setItem("state", JSON.stringify(existingData));
+// localStorage.setItem("state", JSON.stringify(existingData));
+
+const openBtn = document.getElementById("open-btn");
+
+console.log(link);
+openBtn.addEventListener('click', () => {
+    console.log('tap')
+    console.log(link);
+    window.open('https://10.77.71.130/sd/operator/#uuid:serviceCall$1816683673')
+})

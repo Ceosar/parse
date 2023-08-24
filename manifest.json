@@ -12,5 +12,5 @@
     "icons": {
       "128": "logo.png"
     },
-    "permissions": ["activeTab", "scripting"]
+    "permissions": ["activeTab", "scripting", "tabs"]
   }

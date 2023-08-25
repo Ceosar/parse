@@ -1,16 +1,22 @@
 {
-    "manifest_version": 3,
-    "name": "Parser",
-    "description": "Отправляем данные со страницы",
-    "version": "1.0",
-    "author": "user",
-    "action": {
+  "manifest_version": 3,
+  "name": "Parser",
+  "description": "Отправляем данные со страницы",
+  "version": "1.0",
+  "author": "user",
+  "action": {
       "default_title": "information",
       "default_icon": "logo.png",
       "default_popup": "index.html"
-    },
-    "icons": {
+  },
+  "icons": {
       "128": "logo.png"
-    },
-    "permissions": ["activeTab", "scripting", "tabs"]
-  }
+  },
+  "permissions": ["activeTab", "scripting"],
+  "content_scripts": [
+      {
+          "matches": ["https://10.77.71.130/sd/operator/*"],
+          "js": ["parser.js"]
+      }
+  ]
+}

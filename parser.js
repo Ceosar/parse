@@ -6,11 +6,38 @@ var existingData = JSON.parse(localStorage.getItem("state")) || [];
 
 var link;
 
-// async function parseWindow(linker){
-//     return new Promise((resolve, reject) => {
-//         var newTab = window.open
-//     })
-// }
+async function parseWindow(linker){
+    return new Promise((resolve, reject) => {
+        // var newTab = window.open(linker);
+        var newTab = window;
+        location.href = linker;
+        newTab.onload = async function(){
+            try {
+                var body = document.querySelector('body');
+                console.log(body);
+                resolve(body);
+                // var iframeDocument = newTab.document;
+                // if (iframeDocument) {
+                //     var divInsideIframe = iframeDocument.querySelector("div");
+                //     if (divInsideIframe) {
+                //         var content = divInsideIframe.textContent.trim();
+                //         console.log("Содержимое <div> внутри iframe:", content);
+                //         resolve(content);
+                //     } else {
+                //         console.log("Элемент <div> внутри iframe не найден");
+                //         resolve(null);
+                //     }
+                // }
+            } catch (error) {
+                console.log("Ошибка при обращении к содержимому iframe:", error);
+                reject(error);
+            } finally {
+                console.log('closed');
+                newTab.close();
+            }
+        }
+    })
+}
 
 tableRowElements.forEach(async function(tableRowElement) {
     var dateStart = "";
@@ -122,27 +149,30 @@ tableRowElements.forEach(async function(tableRowElement) {
     if (resizeCol7) {
         var tegA = resizeCol7.querySelector('.cellInsider');
         link = tegA.getAttribute('href');
-        console.log(link)
-        console.log(tegA)
+        console.log(link);
+        console.log(tegA);
         try {
             var linker = 'https://10.77.71.130/sd/operator/' + link;
             // var linker = 'https://10.77.71.130/sd/operator/#uuid:serviceCall$1832624890';
-            console.log(linker);
-            var newTab = window.open(linker, '_blank');
-            newTab.onload = async function() {
-                try {
-                    var body = document.querySelector('body');
-                    console.log(body);
-                } catch (error) {
-                    console.log("Ошибка при обращении к содержимому iframe:", error);
-                } finally {
-                    console.log('closed');
-                    newTab.close();
-                }
-            };
+
+            var response = await fetch(linker, {
+                headers: {
+                    'X-Content-Type-Options': 'nosniff',
+            }});
+
+            console.log(response);
+            var htmlText = await response.text();
+            var parser = new DOMParser();
+            var doc = parser.parseFromString(htmlText, 'text/html');
+            console.log(doc);
+            var someElement = doc.querySelector('body');
+            // var documentIframe = someElement.querySelector("html");
+            console.log(someElement);
+            // var content = await parseWindow(linker);
+            // console.log(content);
         }
         catch(error){
-            console.log(error)
+            console.log(error);
         }
     }
 
@@ -155,16 +185,7 @@ tableRowElements.forEach(async function(tableRowElement) {
         type: type
     }
 
-    existingData.push(obj)
+    existingData.push(obj);
 });
 
 // localStorage.setItem("state", JSON.stringify(existingData));
-
-const openBtn = document.getElementById("open-btn");
-
-console.log(link);
-openBtn.addEventListener('click', () => {
-    console.log('tap')
-    console.log(link);
-    window.open('https://10.77.71.130/sd/operator/#uuid:serviceCall$1816683673')
-})

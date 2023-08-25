@@ -12,7 +12,7 @@
   "icons": {
       "128": "logo.png"
   },
-  "permissions": ["activeTab", "scripting"],
+  "permissions": ["activeTab", "scripting", "tabs"],
   "content_scripts": [
       {
           "matches": ["https://10.77.71.130/sd/operator/*"],

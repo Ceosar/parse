@@ -5,38 +5,30 @@ var tableRowElements = document.querySelectorAll(".tableRow");
 var existingData = JSON.parse(localStorage.getItem("state")) || [];
 
 var link;
-
-async function parseWindow(linker){
+async function parseWindow(linker) {
     return new Promise((resolve, reject) => {
-        // var newTab = window.open(linker);
-        var newTab = window;
-        location.href = linker;
-        newTab.onload = async function(){
-            try {
-                var body = document.querySelector('body');
-                console.log(body);
-                resolve(body);
-                // var iframeDocument = newTab.document;
-                // if (iframeDocument) {
-                //     var divInsideIframe = iframeDocument.querySelector("div");
-                //     if (divInsideIframe) {
-                //         var content = divInsideIframe.textContent.trim();
-                //         console.log("Содержимое <div> внутри iframe:", content);
-                //         resolve(content);
-                //     } else {
-                //         console.log("Элемент <div> внутри iframe не найден");
-                //         resolve(null);
-                //     }
-                // }
-            } catch (error) {
-                console.log("Ошибка при обращении к содержимому iframe:", error);
+        browser.tabs.create({ url: linker, active: false }, async (newTab) => {
+            browser.tabs.executeScript(newTab.id, {
+                code: `(${getIframeContent.toString()})();`
+            }).then((result) => {
+                browser.tabs.remove(newTab.id);
+
+                resolve(result[0]);
+            }).catch((error) => {
                 reject(error);
-            } finally {
-                console.log('closed');
-                newTab.close();
-            }
-        }
-    })
+            });
+        });
+    });
+}
+
+function getIframeContent() {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(document.documentElement.outerHTML, 'text/html');
+    const divInsideIframe = doc.querySelector("header");
+    if (divInsideIframe) {
+        return divInsideIframe.textContent.trim();
+    }
+    return null;
 }
 
 tableRowElements.forEach(async function(tableRowElement) {
@@ -148,30 +140,14 @@ tableRowElements.forEach(async function(tableRowElement) {
 
     if (resizeCol7) {
         var tegA = resizeCol7.querySelector('.cellInsider');
-        link = tegA.getAttribute('href');
+        var link = tegA.getAttribute('href');
         console.log(link);
         console.log(tegA);
         try {
-            var linker = 'https://10.77.71.130/sd/operator/' + link;
-            // var linker = 'https://10.77.71.130/sd/operator/#uuid:serviceCall$1832624890';
-
-            var response = await fetch(linker, {
-                headers: {
-                    'X-Content-Type-Options': 'nosniff',
-            }});
-
-            console.log(response);
-            var htmlText = await response.text();
-            var parser = new DOMParser();
-            var doc = parser.parseFromString(htmlText, 'text/html');
-            console.log(doc);
-            var someElement = doc.querySelector('body');
-            // var documentIframe = someElement.querySelector("html");
-            console.log(someElement);
-            // var content = await parseWindow(linker);
-            // console.log(content);
-        }
-        catch(error){
+            var linker = 'https://10.77.71.130' + link;
+            var iframeContent = await parseWindow(linker);
+            chrome.runtime.sendMessage({ iframeContent });
+        } catch (error) {
             console.log(error);
         }
     }

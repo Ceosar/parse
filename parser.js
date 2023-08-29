@@ -39,7 +39,7 @@ async function parseWindow(linker){
     })
 }
 
-tableRowElements.forEach(async function(tableRowElement) {
+async function parseTableRow(tableRowElement) {
     var dateStart = "";
     var sla = "";
     var id = "";
@@ -151,28 +151,24 @@ tableRowElements.forEach(async function(tableRowElement) {
         link = tegA.getAttribute('href');
         console.log(link);
         console.log(tegA);
-        try {
-            var linker = 'https://10.77.71.130/sd/operator/' + link;
-            // var linker = 'https://10.77.71.130/sd/operator/#uuid:serviceCall$1832624890';
-
-            var response = await fetch(linker, {
-                headers: {
-                    'X-Content-Type-Options': 'nosniff',
-            }});
-
-            console.log(response);
-            var htmlText = await response.text();
-            var parser = new DOMParser();
-            var doc = parser.parseFromString(htmlText, 'text/html');
-            console.log(doc);
-            var someElement = doc.querySelector('body');
-            // var documentIframe = someElement.querySelector("html");
-            console.log(someElement);
-            // var content = await parseWindow(linker);
-            // console.log(content);
+        const linker = "https://10.77.71.130/sd/operator/"+link;
+        try{
+            // var htmlText = await openTab
+            // var htmlText = await openTab(link);
+            // console.log("opentab");
+            // var body = htmlText.querySelector('body');
+            // console.log(body);
+            setTimeout(async () => {
+                var htmlText = await fetchData(linker);
+                if(htmlText){
+                    await Parserer(htmlText);
+                }
+            }, 10000);
         }
         catch(error){
             console.log(error);
+        }
+        finally{
         }
     }
 
@@ -186,6 +182,76 @@ tableRowElements.forEach(async function(tableRowElement) {
     }
 
     existingData.push(obj);
-});
+};
+
+async function openTab(linker){
+    return new Promise((resolve, reject) => {
+        // var newTab = window.open(linker, '_blank');
+        // window.location.href = linker;
+        window.location.assign(linker);
+        window.onload = async function(){
+            try{
+                const body = document.querySelector('body');
+                console.log(body);
+                resolve(body);
+            }
+            catch(error){
+                console.log(error);
+                reject(error);
+            }
+            finally{
+                console.log('closed');
+                window.history.go(-1);
+            }
+        }
+    });
+}
+
+async function fetchData(linker) {
+    console.log(linker);
+    try {
+        const response = await fetch(linker, {
+            headers: {
+                'Content-Type':'text/html;charset=UTF-8',
+                'Access-Control-Allow-Origin': 'https://10.77.71.130/sd/operator/#uuid:serviceCall$',
+                // 'X-Content-Type-Options': '',
+            }
+        });
+
+        console.log("settimeout")
+        if (response.ok) {
+                console.log(response);
+                const htmlText = await response.text();
+                return htmlText;
+            } else {
+                console.error('Fetch failed with status:', response.status);
+                return null;
+            }
+    } catch (error) {
+        console.error('Fetch error:', error);
+        return null;
+    }
+}
+
+async function Parserer(htmlText){
+    // console.log(response)
+    console.log(htmlText);
+    var parser = new DOMParser();
+    var doc = parser.parseFromString(htmlText, 'text/html');
+    console.log(doc);
+    var someElement = doc.querySelector('#gwt-debug-title-value');
+    // var documentIframe = someElement.querySelector("html");
+    var global = doc.getElementById('globalWrapper');
+    console.log(global);
+    console.log(someElement);
+    // var content = await parseWindow(linker);
+    // console.log(content);
+}
+
+(async () => {
+    for (const tableRowElement of tableRowElements) {
+        await parseTableRow(tableRowElement);
+    }
+})();
 
 // localStorage.setItem("state", JSON.stringify(existingData));

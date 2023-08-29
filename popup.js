@@ -21,13 +21,16 @@
 // )();
 
 document.addEventListener("DOMContentLoaded", function () {
-	const startButton = document.getElementById("start-button");
-  
-	startButton.addEventListener("click", async () => {
-	  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-	  await chrome.scripting.executeScript({
+  // const startButton = document.getElementById("start-button");
+	const sendBtn = document.getElementById("send-btn");
+	sendBtn.addEventListener("click", async () => {
+		const [tab] = await chrome.tabs.query({
+		active: true,
+		currentWindow: true,
+		});
+		await chrome.scripting.executeScript({
 		target: { tabId: tab.id },
 		files: ["parser.js"],
-	  });
+		});
 	});
-  });
+});

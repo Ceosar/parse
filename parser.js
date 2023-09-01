@@ -139,23 +139,25 @@ async function parseTableRow(tableRowElement) {
     var resizeCol7 = tableRowElement.querySelector('.resize-column-90');
 
     if (resizeCol7) {
+        const NUMERIC_REGEXP = /\d+/g;
         var tegA = resizeCol7.querySelector('.cellInsider');
         var link = tegA.getAttribute('href');
         console.log(link);
+        const numberLink = Number(link.match(NUMERIC_REGEXP));
+        console.log(numberLink);
         console.log(tegA);
-        const linker = "https://10.77.71.130/sd/operator/"+link;
+        const linker = `https://10.77.71.130/sd/operator/richText?uuid=serviceCall$${numberLink}&checkSum=70c5485baee3135538a492f2468eca020fcb7bd8d7c9dff7934d9ffe28053e2c&attr=descriptionInRTF&isComment=false`;
+        console.log(linker);
         try{
             // var htmlText = await openTab
             // var htmlText = await openTab(link);
             // console.log("opentab");
             // var body = htmlText.querySelector('body');
             // console.log(body);
-            setTimeout(async () => {
-                var htmlText = await fetchData(linker);
-                if(htmlText){
-                    await Parserer(htmlText);
-                }
-            }, 10000);
+            var htmlText = await fetchData(linker);
+            if(htmlText){
+                await Parserer(htmlText);
+            }
         }
         catch(error){
             console.log(error);
@@ -199,24 +201,30 @@ async function openTab(linker){
     });
 }
 
+
 async function fetchData(linker) {
     console.log(linker);
     try {
         const response = await fetch(linker, {
             headers: {
                 'Content-Type':'text/html;charset=UTF-8',
-                'Access-Control-Allow-Origin': 'https://10.77.71.130/sd/operator/#uuid:serviceCall$',
+                // 'Access-Control-Allow-Origin': 'https://10.77.71.130/sd/operator/#uuid:serviceCall$',
                 // 'X-Content-Type-Options': '',
-            }
+            },
+            // redirect: 'follow',
+            mode: 'cors',
         });
-
-        console.log("settimeout")
-        if (response.ok) {
+        console.log(response)
+// https://10.77.71.130/sd/operator/richText?uuid=serviceCall$1841372452
+        if (response.url === `'https://10.77.71.130/sd/operator/'+${linker}`) {
                 console.log(response);
                 const htmlText = await response.text();
                 return htmlText;
             } else {
+                console.log(response);
                 console.error('Fetch failed with status:', response.status);
+                const htmlText = await response.text();
+                return htmlText;
                 return null;
             }
     } catch (error) {
